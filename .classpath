@@ -3,10 +3,10 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="java-api/src"/>
 	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="lib" path="java-api/libs/json-org.jar"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="lib" path="java-api/libs/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="java-api/libs/httpclient-4.0.3.jar"/>
 	<classpathentry kind="lib" path="java-api/libs/httpcore-4.0.1.jar"/>
-	<classpathentry kind="lib" path="java-api/libs/json-org.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -20,9 +20,10 @@ import com.hoccer.api.UpdateException;
 public class AsyncLinccer extends Linccer {
 
     public static class MessageType {
-        public final static int SHARED            = 2;
-        public final static int RECEIVED          = 1;
-        public final static int FAILURE           = 0;
+        public final static int SHARED            = 3;
+        public final static int RECEIVED          = 2;
+        public final static int NOTHING_SHARED    = 1;
+        public final static int NOTHING_RECEIVED  = 0;
         public final static int BAD_MODE          = -1;
         public final static int BAD_CLIENT_ACTION = -2;
         public final static int COLLISION         = -3;
@@ -44,7 +45,7 @@ public class AsyncLinccer extends Linccer {
                     if (msg.obj != null) {
                         msg.what = MessageType.SHARED;
                     } else {
-                        msg.what = MessageType.FAILURE;
+                        msg.what = MessageType.NOTHING_SHARED;
                     }
                 } catch (BadModeException e) {
                     msg.what = MessageType.BAD_MODE;
@@ -76,7 +77,7 @@ public class AsyncLinccer extends Linccer {
                     if (msg.obj != null) {
                         msg.what = MessageType.RECEIVED;
                     } else {
-                        msg.what = MessageType.FAILURE;
+                        msg.what = MessageType.NOTHING_RECEIVED;
                     }
                 } catch (BadModeException e) {
                     msg.what = MessageType.BAD_MODE;

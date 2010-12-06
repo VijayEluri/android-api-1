@@ -20,8 +20,9 @@ import com.hoccer.api.UpdateException;
 public class AsyncLinccer extends Linccer {
 
     public static class MessageType {
-        public final static int SUCCSESS          = 0;
-        public final static int FAILURE           = 1;
+        public final static int SHARED            = 2;
+        public final static int RECEIVED          = 1;
+        public final static int FAILURE           = 0;
         public final static int BAD_MODE          = -1;
         public final static int BAD_CLIENT_ACTION = -2;
         public final static int COLLISION         = -3;
@@ -41,7 +42,7 @@ public class AsyncLinccer extends Linccer {
                     msg.obj = share(mode, payload);
 
                     if (msg.obj != null) {
-                        msg.what = MessageType.SUCCSESS;
+                        msg.what = MessageType.SHARED;
                     } else {
                         msg.what = MessageType.FAILURE;
                     }
@@ -64,6 +65,39 @@ public class AsyncLinccer extends Linccer {
         }).start();
     }
 
+    public void asyncReceive(final String mode, final Handler handler) {
+        new Thread(new Runnable() {
+            public void run() {
+
+                Message msg = handler.obtainMessage();
+                try {
+                    msg.obj = receive(mode);
+
+                    if (msg.obj != null) {
+                        msg.what = MessageType.RECEIVED;
+                    } else {
+                        msg.what = MessageType.FAILURE;
+                    }
+                } catch (BadModeException e) {
+                    msg.what = MessageType.BAD_MODE;
+                    msg.obj = e;
+                } catch (ClientActionException e) {
+                    msg.what = MessageType.BAD_CLIENT_ACTION;
+                    msg.obj = e;
+                } catch (CollidingActionsException e) {
+                    msg.what = MessageType.COLLISION;
+                    msg.obj = e;
+                } catch (Exception e) {
+                    msg.what = MessageType.UNKNOWN_EXCEPTION;
+                    msg.obj = e;
+                }
+
+                handler.handleMessage(msg);
+            }
+        }).start();
+
+    }
+
     public void onWifiScanResults(List<ScanResult> scanResults) throws UpdateException {
         if (scanResults != null) {
             List<String> bssids = new ArrayList<String>();
@@ -83,4 +117,5 @@ public class AsyncLinccer extends Linccer {
         onGpsChanged(location.getLatitude(), location.getLongitude(), (int) location.getAccuracy(),
                 location.getTime());
     }
+
 }

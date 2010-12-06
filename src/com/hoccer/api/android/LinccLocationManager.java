@@ -77,7 +77,6 @@ public class LinccLocationManager implements LocationListener {
         }
 
         Geocoder gc = new Geocoder(mContext);
-        // Logger.v(LOG_TAG, "location: ", pLocation);
 
         Address address = null;
         List<Address> addresses = gc.getFromLocation(location.getLatitude(), location

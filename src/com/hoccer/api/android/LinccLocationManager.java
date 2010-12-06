@@ -16,8 +16,6 @@ import com.hoccer.api.UpdateException;
 
 public class LinccLocationManager implements LocationListener {
 
-    private static final String   TAG                   = "LinccLocationManager";
-
     private static final String   UNKNOWN_LOCATION_TEXT = "You can not hoc without a location";
 
     private final LocationManager mLocationManager;

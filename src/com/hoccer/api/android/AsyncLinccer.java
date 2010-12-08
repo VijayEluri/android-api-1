@@ -20,6 +20,7 @@ import com.hoccer.api.UpdateException;
 public class AsyncLinccer extends Linccer {
 
     public static class MessageType {
+        public final static int SEARCHING         = 4;
         public final static int SHARED            = 3;
         public final static int RECEIVED          = 2;
         public final static int NOTHING_SHARED    = 1;
@@ -40,6 +41,7 @@ public class AsyncLinccer extends Linccer {
 
                 Message msg = handler.obtainMessage();
                 try {
+                    handler.handleMessage(handler.obtainMessage(MessageType.SEARCHING));
                     msg.obj = share(mode, payload);
 
                     if (msg.obj != null) {

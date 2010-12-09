@@ -74,6 +74,7 @@ public class AsyncLinccer extends Linccer {
 
                 Message msg = handler.obtainMessage();
                 try {
+                    handler.handleMessage(handler.obtainMessage(MessageType.SEARCHING));
                     msg.obj = receive(mode);
 
                     if (msg.obj != null) {

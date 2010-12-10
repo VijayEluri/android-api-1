@@ -33,7 +33,7 @@ public class FileCacheService extends Service {
     public String store(StreamableContent source, int secondsUntilExipred,
             HttpResponseHandler responseHandler) throws IOException {
         String url = ClientConfig.getFileCacheBaseUri() + "/" + source.getFilename()
-                + "/?expires_in=" + secondsUntilExipred;
+                + "?expires_in=" + secondsUntilExipred;
 
         AsyncHttpPut storeRequest = new AsyncHttpPut(url);
         storeRequest.registerResponseHandler(responseHandler);

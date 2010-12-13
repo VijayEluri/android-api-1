@@ -2,9 +2,12 @@ package com.hoccer.api.android;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.json.JSONObject;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
@@ -122,4 +125,17 @@ public class AsyncLinccer extends Linccer {
                 location.getTime());
     }
 
+    public static String getClientIdFromSharedPreferences(Context context, String appName) {
+        SharedPreferences prefs = context.getSharedPreferences(appName, Context.MODE_PRIVATE);
+
+        String tmpUUID = UUID.randomUUID().toString();
+        String storedUUID = prefs.getString("client_uuid", tmpUUID);
+
+        if (tmpUUID.equals(storedUUID)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("client_uuid", tmpUUID);
+            editor.commit();
+        }
+        return storedUUID;
+    }
 }

@@ -12,6 +12,7 @@ import android.location.Location;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.hoccer.api.BadModeException;
 import com.hoccer.api.ClientActionException;
@@ -66,6 +67,8 @@ public class AsyncLinccer extends Linccer {
                     msg.obj = e;
                 }
 
+                Log.v("Linccer", msg.what + " " + msg.obj);
+
                 handler.handleMessage(msg);
             }
         }).start();
@@ -98,6 +101,8 @@ public class AsyncLinccer extends Linccer {
                     msg.what = MessageType.UNKNOWN_EXCEPTION;
                     msg.obj = e;
                 }
+
+                Log.v("Linccer", msg.what + " " + msg.obj);
 
                 handler.handleMessage(msg);
             }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.hoccer.api.ClientConfig;
 import com.hoccer.data.StreamableContent;
@@ -19,29 +20,39 @@ public class FileCacheService extends Service {
     private final HashMap<String, AsyncHttpRequest> mOngoingRequests = new HashMap<String, AsyncHttpRequest>();
 
     protected void stopWhenAllLoadsFinished() {
-
+        if (mOngoingRequests.size() == 0) {
+            stopSelf();
+        }
     }
 
-    public void fetch(String url, StreamableContent sink, HttpResponseHandler responseHandler) {
-        AsyncHttpGet fetchRequest = new AsyncHttpGet(url);
+    public void fetch(String uri, StreamableContent sink, HttpResponseHandler responseHandler) {
+        AsyncHttpGet fetchRequest = new AsyncHttpGet(uri);
         fetchRequest.registerResponseHandler(responseHandler);
         fetchRequest.setStreamableContent(sink);
         fetchRequest.start();
-        mOngoingRequests.put(url, fetchRequest);
+        mOngoingRequests.put(uri, fetchRequest);
     }
 
     public String store(StreamableContent source, int secondsUntilExipred,
             HttpResponseHandler responseHandler) throws IOException {
-        String url = ClientConfig.getFileCacheBaseUri() + "/" + source.getFilename()
+        String uri = ClientConfig.getFileCacheBaseUri() + "/" + source.getFilename()
                 + "?expires_in=" + secondsUntilExipred;
 
-        AsyncHttpPut storeRequest = new AsyncHttpPut(url);
+        AsyncHttpPut storeRequest = new AsyncHttpPut(uri);
         storeRequest.registerResponseHandler(responseHandler);
         storeRequest.setBody(source);
         storeRequest.start();
-        mOngoingRequests.put(url, storeRequest);
+        mOngoingRequests.put(uri, storeRequest);
 
-        return url;
+        return uri;
+    }
+
+    public void cancel(String uri) {
+        AsyncHttpRequest request = mOngoingRequests.remove(uri);
+        request.interrupt();
+        Log.v("FileCacheService", "aborting " + uri + " as " + request + " interr: "
+                + request.isInterrupted());
+        ;
     }
 
     @Override

@@ -8,9 +8,9 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import android.util.Log;
 
-import com.hoccer.data.StreamableContent;
+import com.hoccer.data.GenericStreamableContent;
 
-public abstract class AndroidStreamableContent implements StreamableContent {
+public abstract class AndroidStreamableContent extends GenericStreamableContent {
 
     private static final String LOG_TAG = "AndroidStreamableContent";
     ContentResolver             mContentResolver;

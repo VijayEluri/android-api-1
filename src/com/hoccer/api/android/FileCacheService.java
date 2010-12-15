@@ -9,15 +9,16 @@ import android.os.IBinder;
 import com.hoccer.api.ClientConfig;
 import com.hoccer.api.FileCache;
 import com.hoccer.data.StreamableContent;
-import com.hoccer.http.AsyncHttpGet;
 import com.hoccer.http.HttpResponseHandler;
 
 public class FileCacheService extends Service {
 
     private FileCache mFileCache;
 
-    public void setConfig(ClientConfig config) {
-        mFileCache = new FileCache(config);
+    public void init(ClientConfig config) {
+        if (mFileCache == null) {
+            mFileCache = new FileCache(config);
+        }
     }
 
     protected void stopWhenAllLoadsFinished() {
@@ -27,15 +28,13 @@ public class FileCacheService extends Service {
     }
 
     public void fetch(String uri, StreamableContent sink, HttpResponseHandler responseHandler) {
-        AsyncHttpGet fetchRequest = new AsyncHttpGet(uri);
-        fetchRequest.registerResponseHandler(responseHandler);
-        fetchRequest.setStreamableContent(sink);
-        fetchRequest.start();
+        mFileCache.asyncFetch(uri, sink, responseHandler);
     }
 
     public String store(StreamableContent source, int secondsUntilExipred,
             HttpResponseHandler responseHandler) throws IOException {
-        return mFileCache.asyncStore(source, secondsUntilExipred, responseHandler);
+        String uri = mFileCache.asyncStore(source, secondsUntilExipred, responseHandler);
+        return uri;
     }
 
     public void cancel(String uri) {

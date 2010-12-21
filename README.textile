@@ -43,8 +43,7 @@ h2. Install and try out
 
 * download the provided "Android Library Project":https://github.com/downloads/hoccer/android-api
 * make sure you have the latest ADT Eclipse plugin. Previous versions had problems with library projects containing a dash in the project name
-* write some java code using the Linccer (get inspired by "samples":https://github.com/hoccer/java-api/tree/master/sample/com/hoccer/playground)
-* compile and run with JAR's in classpath
+* start a new Android Project and add the Linccer Android-API project as a Library Project
 
 h2. Deployment
 

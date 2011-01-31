@@ -67,10 +67,14 @@ public class LinccLocationManager implements LocationListener {
     }
 
     public void refreshLocation() throws UpdateException {
+        mLinccer.autoSubmitEnvironmentChanges(false);
+
         mLinccer.onWifiScanResults(mWifiManager.getScanResults());
         mLinccer.onNetworkChanged(mLocationManager
                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
         mLinccer.onGpsChanged(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+
+        mLinccer.submitEnvironment();
     }
 
     public void deactivate() {

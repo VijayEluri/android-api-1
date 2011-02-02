@@ -28,10 +28,12 @@
  */
 package com.hoccer.api.android;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.http.client.ClientProtocolException;
 import org.json.JSONObject;
 
 import android.content.Context;
@@ -138,7 +140,8 @@ public class AsyncLinccer extends Linccer {
 
     }
 
-    public void onWifiScanResults(List<ScanResult> scanResults) throws UpdateException {
+    public void onWifiScanResults(List<ScanResult> scanResults) throws UpdateException,
+            ClientProtocolException, IOException {
         if (scanResults != null) {
             List<String> bssids = new ArrayList<String>();
             for (ScanResult scan : scanResults) {
@@ -148,12 +151,14 @@ public class AsyncLinccer extends Linccer {
         }
     }
 
-    public void onNetworkChanged(Location location) throws UpdateException {
+    public void onNetworkChanged(Location location) throws UpdateException,
+            ClientProtocolException, IOException {
         onNetworkChanged(location.getLatitude(), location.getLongitude(), (int) location
                 .getAccuracy(), location.getTime());
     }
 
-    public void onGpsChanged(Location location) throws UpdateException {
+    public void onGpsChanged(Location location) throws UpdateException, ClientProtocolException,
+            IOException {
         onGpsChanged(location.getLatitude(), location.getLongitude(), (int) location.getAccuracy(),
                 location.getTime());
     }

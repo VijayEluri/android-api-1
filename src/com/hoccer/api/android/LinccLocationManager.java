@@ -31,6 +31,8 @@ package com.hoccer.api.android;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.http.client.ClientProtocolException;
+
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
@@ -66,7 +68,7 @@ public class LinccLocationManager implements LocationListener {
         return mContext;
     }
 
-    public void refreshLocation() throws UpdateException {
+    public void refreshLocation() throws UpdateException, ClientProtocolException, IOException {
         mLinccer.autoSubmitEnvironmentChanges(false);
 
         mLinccer.onWifiScanResults(mWifiManager.getScanResults());

@@ -69,6 +69,10 @@ public class FileCacheService extends Service {
         mFileCache.cancel(uri);
     }
 
+    public boolean isOngoing(String uri) {
+        return mFileCache.getOngoingRequests().get(uri) == null ? false : true;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;

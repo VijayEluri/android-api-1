@@ -50,7 +50,7 @@ public class FileCacheService extends Service {
     }
 
     protected void stopWhenAllLoadsFinished() {
-        if (mFileCache.getOngoingRequests().size() == 0) {
+        if (!mFileCache.hasOngoingRequests()) {
             stopSelf();
         }
     }
@@ -70,7 +70,7 @@ public class FileCacheService extends Service {
     }
 
     public boolean isOngoing(String uri) {
-        return mFileCache.getOngoingRequests().get(uri) == null ? false : true;
+        return mFileCache.isOngoing(uri);
     }
 
     @Override

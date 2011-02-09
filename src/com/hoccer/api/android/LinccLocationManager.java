@@ -71,6 +71,7 @@ public class LinccLocationManager implements LocationListener {
     public void refreshLocation() throws UpdateException, ClientProtocolException, IOException {
         mLinccer.autoSubmitEnvironmentChanges(false);
 
+        mLinccer.measureNetworkLatency();
         mLinccer.onWifiScanResults(mWifiManager.getScanResults());
         Location location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         if (location != null)

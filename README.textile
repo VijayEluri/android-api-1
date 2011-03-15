@@ -41,7 +41,7 @@ p. More examples can soon be found in the samples folder.
 
 h2. Install and try out
 
-* get the Android API source code with @git clone git&#064;github.com:hoccer/android-api.git@
+* get the Android API source code with @git clone git@@@github.com:hoccer/android-api.git@
 * fetch the Java API submodule with @git submodule --init update@ 
 * make sure you have the latest ADT Eclipse plugin. Previous versions had problems with library projects containing a dash in the project name
 * start your new Android Project and add Android API source project as am Android Library Project (as described in http://developer.android.com/guide/developing/projects/projects-eclipse.html "Referencing a library project")

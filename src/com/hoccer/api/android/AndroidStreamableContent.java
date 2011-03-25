@@ -43,7 +43,6 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     private static final String LOG_TAG = "AndroidStreamableContent";
     ContentResolver             mContentResolver;
     private Uri                 mDataUri;
-    protected String            mContentType;
 
     public AndroidStreamableContent(ContentResolver pContentResolver) {
         mContentResolver = pContentResolver;
@@ -83,7 +82,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
             }
         }
 
-        return mContentType;
+        return super.getContentType();
     }
 
     // override this in subclass, if you dont set a contentresolver uri

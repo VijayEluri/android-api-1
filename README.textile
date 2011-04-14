@@ -37,7 +37,7 @@ linccer.asyncShare("one-to-one",
 // safely receive passed data from an other client here and now
 linccer.asyncReceive("one-to-one", handler);
 
-p. More examples can be found at https://github.com/hoccer/android-demos.
+p. More examples can be found at "github.com/hoccer/android-demos":https://github.com/hoccer/android-demos.
 
 h2. Install and try out
 

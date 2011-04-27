@@ -1,30 +1,16 @@
 /**
- * Copyright (C) 2010, Hoccer GmbH Berlin, Germany <www.hoccer.com>
- *
- * These coded instructions, statements, and computer programs contain
- * proprietary information of Hoccer GmbH Berlin, and are copy protected
- * by law. They may be used, modified and redistributed under the terms
- * of GNU General Public License referenced below. 
- *    
- * Alternative licensing without the obligations of the GPL is
- * available upon request.
- * 
- * GPL v3 Licensing:
- * 
- * This file is part of the "Linccer Android-API".
- * 
- * Linccer Android-API is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Linccer Android-API is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Linccer Android-API. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2010, Hoccer GmbH Berlin, Germany <www.hoccer.com> These coded instructions,
+ * statements, and computer programs contain proprietary information of Hoccer GmbH Berlin, and are
+ * copy protected by law. They may be used, modified and redistributed under the terms of GNU
+ * General Public License referenced below. Alternative licensing without the obligations of the GPL
+ * is available upon request. GPL v3 Licensing: This file is part of the "Linccer Android-API".
+ * Linccer Android-API is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version. Linccer Android-API is distributed in the
+ * hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with Linccer
+ * Android-API. If not, see <http://www.gnu.org/licenses/>.
  */
 package com.hoccer.api.android;
 
@@ -54,6 +40,8 @@ import com.hoccer.api.UpdateException;
 public class AsyncLinccer extends Linccer {
 
     public static class MessageType {
+        public final static int PEEKED            = 6;
+        public final static int PEEKING           = 5;
         public final static int SEARCHING         = 4;
         public final static int SHARED            = 3;
         public final static int RECEIVED          = 2;
@@ -140,6 +128,35 @@ public class AsyncLinccer extends Linccer {
 
     }
 
+    // public void asyncPeek(String groupID, final Handler handler) {
+    // new Thread(new Runnable() {
+    // public void run() {
+    //
+    // Message msg = handler.obtainMessage();
+    // try {
+    // handler.handleMessage(handler.obtainMessage(MessageType.PEEKING));
+    // msg.obj = peek(groupID);
+    //
+    // if (msg.obj != null) {
+    // msg.what = MessageType.PEEKED;
+    // } else {
+    // msg.what = MessageType.NOTHING_RECEIVED;
+    // }
+    // } catch (ClientActionException e) {
+    // msg.what = MessageType.BAD_CLIENT_ACTION;
+    // msg.obj = e;
+    // } catch (Exception e) {
+    // msg.what = MessageType.UNKNOWN_EXCEPTION;
+    // msg.obj = e;
+    // }
+    //
+    // Log.v("Linccer", msg.what + " " + msg.obj);
+    //
+    // handler.handleMessage(msg);
+    // }
+    // }).start();
+    // }
+
     public void onWifiScanResults(List<ScanResult> scanResults) throws UpdateException,
             ClientProtocolException, IOException {
         if (scanResults != null) {
@@ -153,8 +170,8 @@ public class AsyncLinccer extends Linccer {
 
     public void onNetworkChanged(Location location) throws UpdateException,
             ClientProtocolException, IOException {
-        onNetworkChanged(location.getLatitude(), location.getLongitude(), (int) location
-                .getAccuracy(), location.getTime());
+        onNetworkChanged(location.getLatitude(), location.getLongitude(),
+                (int) location.getAccuracy(), location.getTime());
     }
 
     public void onGpsChanged(Location location) throws UpdateException, ClientProtocolException,
@@ -176,4 +193,20 @@ public class AsyncLinccer extends Linccer {
         }
         return storedUUID;
     }
+
+    public static String getUserNameFromSharedPreferences(Context context, String appName) {
+        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
+                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+
+        String tmpUUID = UUID.randomUUID().toString();
+        String clientName = prefs.getString("client_name", tmpUUID);
+
+        if (tmpUUID.equals(clientName)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("client_name", tmpUUID);
+            editor.commit();
+        }
+        return clientName;
+    }
+
 }

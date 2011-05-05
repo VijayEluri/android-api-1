@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.wifi.ScanResult;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -198,7 +199,7 @@ public class AsyncLinccer extends Linccer {
         SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
                 Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
 
-        String tmpUUID = UUID.randomUUID().toString().substring(0, 7);
+        String tmpUUID = Build.MODEL;
         String clientName = prefs.getString("client_name", tmpUUID);
 
         if (tmpUUID.equals(clientName)) {

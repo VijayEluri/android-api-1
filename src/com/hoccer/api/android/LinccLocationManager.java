@@ -27,6 +27,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.hoccer.api.UpdateException;
 
@@ -40,11 +41,13 @@ public class LinccLocationManager implements LocationListener {
     private final Context         mContext;
 
     private final AsyncLinccer    mLinccer;
+    private final Updateable      mUpdater;
 
-    public LinccLocationManager(Context pContext, AsyncLinccer linccer) {
+    public LinccLocationManager(Context pContext, AsyncLinccer linccer, Updateable updater) {
         mContext = pContext;
 
         mLinccer = linccer;
+        mUpdater = updater;
 
         mLocationManager = (LocationManager) pContext.getSystemService(Context.LOCATION_SERVICE);
         mWifiManager = (WifiManager) pContext.getSystemService(Context.WIFI_SERVICE);
@@ -83,7 +86,22 @@ public class LinccLocationManager implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        // Logger.v(LOG_TAG, location);
+        Log.v("LinccLocationManager", location.toString());
+        if (mUpdater != null) {
+            mUpdater.updateNow();
+        }
+        // try {
+        // refreshLocation();
+        // } catch (ClientProtocolException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // } catch (UpdateException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // } catch (IOException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
     }
 
     @Override

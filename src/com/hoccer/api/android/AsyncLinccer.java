@@ -181,6 +181,14 @@ public class AsyncLinccer extends Linccer {
                 location.getTime());
     }
 
+    public static void renewClientIdInSharedPreferences(Context context, String appName) {
+        SharedPreferences prefs = context.getSharedPreferences(appName, Context.MODE_PRIVATE);
+        String tmpUUID = UUID.randomUUID().toString();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("client_uuid", tmpUUID);
+        editor.commit();
+    }
+
     public static String getClientIdFromSharedPreferences(Context context, String appName) {
         SharedPreferences prefs = context.getSharedPreferences(appName, Context.MODE_PRIVATE);
 
@@ -193,6 +201,14 @@ public class AsyncLinccer extends Linccer {
             editor.commit();
         }
         return storedUUID;
+    }
+
+    public static boolean getRenewClientIdFlagFromSharedPreferences(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
+                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+
+        boolean renew = prefs.getBoolean("renew_client_id_on_start", false);
+        return renew;
     }
 
     public static String getUserNameFromSharedPreferences(Context context, String appName) {

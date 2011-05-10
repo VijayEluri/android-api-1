@@ -199,7 +199,7 @@ public class AsyncLinccer extends Linccer {
         SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
                 Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
 
-        String tmpUUID = Build.MODEL;
+        String tmpUUID = "<" + Build.MODEL + ">";
         String clientName = prefs.getString("client_name", tmpUUID);
 
         if (tmpUUID.equals(clientName)) {

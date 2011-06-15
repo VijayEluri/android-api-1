@@ -211,6 +211,29 @@ public class AsyncLinccer extends Linccer {
         return renew;
     }
 
+    public static boolean getUseEncryptionFlagFromSharedPreferences(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
+                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+
+        boolean use = prefs.getBoolean("use_encryption", false);
+        return use;
+    }
+
+    public static String getEncryptionKeyFromSharedPreferences(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
+                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+
+        String tmpUUID = UUID.randomUUID().toString().substring(0, 7);
+        String storedUUID = prefs.getString("encryption_key", tmpUUID);
+
+        if (tmpUUID.equals(storedUUID)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("encryption_key", tmpUUID);
+            editor.commit();
+        }
+        return storedUUID;
+    }
+
     public static String getUserNameFromSharedPreferences(Context context, String appName) {
         SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
                 Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);

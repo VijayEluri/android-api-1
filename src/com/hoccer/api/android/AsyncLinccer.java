@@ -37,8 +37,28 @@ import com.hoccer.api.ClientConfig;
 import com.hoccer.api.CollidingActionsException;
 import com.hoccer.api.Linccer;
 import com.hoccer.api.UpdateException;
+import com.hoccer.data.Base64;
+import com.hoccer.data.CryptoHelper;
 
 public class AsyncLinccer extends Linccer {
+
+    public static final String  PREFERENCES                    = "com.artcom.hoccer_preferences";
+
+    public static final String  PREF_RENEW_CLIENT_ID           = "renew_client_id_on_start";
+    public static final String  PREF_RENEW_KEYPAIR             = "renew_keypair_on_startup";
+    public static final String  PREF_USE_ENCRYPTION            = "use_encryption";
+    public static final String  PREF_DISTRIBUTE_PUBKEY         = "public_key_distribution";
+    public static final String  PREF_AUTO_PASSWORD             = "auto_key_change";
+
+    public static final boolean PREF_DEFAULT_RENEW_CLIENT_ID   = false;
+    public static final boolean PREF_DEFAULT_RENEW_KEYPAIR     = false;
+    public static final boolean PREF_DEFAULT_USE_ENCRYPTION    = true;
+    public static final boolean PREF_DEFAULT_DISTRIBUTE_PUBKEY = true;
+    public static final boolean PREF_DEFAULT_AUTO_PASSWORD     = true;
+
+    public static final String  PREF_SHARED_KEY                = "encryption_key";
+    public static final String  PREF_PUBLIC_KEY                = "public_key";
+    public static final String  PREF_PRIVATE_KEY               = "private_key";
 
     public static class MessageType {
         public final static int PEEKED            = 6;
@@ -181,16 +201,16 @@ public class AsyncLinccer extends Linccer {
                 location.getTime());
     }
 
-    public static void renewClientIdInSharedPreferences(Context context, String appName) {
-        SharedPreferences prefs = context.getSharedPreferences(appName, Context.MODE_PRIVATE);
+    public static void renewClientIdInSharedPreferences(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
         String tmpUUID = UUID.randomUUID().toString();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("client_uuid", tmpUUID);
         editor.commit();
     }
 
-    public static String getClientIdFromSharedPreferences(Context context, String appName) {
-        SharedPreferences prefs = context.getSharedPreferences(appName, Context.MODE_PRIVATE);
+    public static String getClientIdFromSharedPreferences(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
 
         String tmpUUID = UUID.randomUUID().toString();
         String storedUUID = prefs.getString("client_uuid", tmpUUID);
@@ -203,47 +223,68 @@ public class AsyncLinccer extends Linccer {
         return storedUUID;
     }
 
-    public static boolean getRenewClientIdFlagFromSharedPreferences(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
-                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+    public static boolean getFlagFromSharedPreferences(Context context, String prefid,
+            boolean defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
 
-        boolean renew = prefs.getBoolean("renew_client_id_on_start", false);
-        return renew;
+        boolean flag = prefs.getBoolean(prefid, defaultValue);
+        return flag;
     }
 
-    public static boolean getUseEncryptionFlagFromSharedPreferences(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
-                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+    public static void setFlagInSharedPreferences(Context context, String key, boolean flag) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
 
-        boolean use = prefs.getBoolean("use_encryption", false);
-        return use;
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(key, flag);
+        editor.commit();
+    }
+
+    public static String newEncryptionKey() {
+        return "^" + Base64.encodeBytes(CryptoHelper.makeRandomBytes(16)) + "$";
+    }
+
+    public static boolean isAutoEncryptionKey(String key) {
+        if (key.length() >= 2) {
+            return key.charAt(0) == '^' && key.charAt(key.length()) == '$';
+        }
+        return false;
+    }
+
+    public static void setInSharedPreferences(Context context, String key, String content) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(key, content);
+        editor.commit();
     }
 
     public static String getEncryptionKeyFromSharedPreferences(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
-                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
 
-        String tmpUUID = UUID.randomUUID().toString().substring(0, 7);
-        String storedUUID = prefs.getString("encryption_key", tmpUUID);
+        String defaultValue = newEncryptionKey();
+        String storedValue = prefs.getString(PREF_SHARED_KEY, defaultValue);
 
-        if (tmpUUID.equals(storedUUID)) {
+        if (defaultValue.equals(storedValue)) {
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("encryption_key", tmpUUID);
+            editor.putString(PREF_SHARED_KEY, defaultValue);
             editor.commit();
         }
-        return storedUUID;
+        return storedValue;
     }
 
-    public static String getUserNameFromSharedPreferences(Context context, String appName) {
-        SharedPreferences prefs = context.getSharedPreferences("com.artcom.hoccer_preferences",
-                Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+    public static void setEncryptionKeyInSharedPreferences(Context context, String key) {
+        setInSharedPreferences(context, PREF_SHARED_KEY, key);
+    }
 
-        String tmpUUID = "<" + Build.MODEL + ">";
-        String clientName = prefs.getString("client_name", tmpUUID);
+    public static String getUserNameFromSharedPreferences(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
 
-        if (tmpUUID.equals(clientName)) {
+        String defaultValue = "<" + Build.MODEL + ">";
+        String clientName = prefs.getString("client_name", defaultValue);
+
+        if (defaultValue.equals(clientName)) {
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("client_name", tmpUUID);
+            editor.putString("client_name", defaultValue);
             editor.commit();
         }
         return clientName;

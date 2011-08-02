@@ -42,23 +42,25 @@ import com.hoccer.data.CryptoHelper;
 
 public class AsyncLinccer extends Linccer {
 
-    public static final String  PREFERENCES                    = "com.artcom.hoccer_preferences";
+    public static final String  PREFERENCES                     = "com.artcom.hoccer_preferences";
 
-    public static final String  PREF_RENEW_CLIENT_ID           = "renew_client_id_on_start";
-    public static final String  PREF_RENEW_KEYPAIR             = "renew_keypair_on_startup";
-    public static final String  PREF_USE_ENCRYPTION            = "use_encryption";
-    public static final String  PREF_DISTRIBUTE_PUBKEY         = "public_key_distribution";
-    public static final String  PREF_AUTO_PASSWORD             = "auto_key_change";
+    public static final String  PREF_RENEW_CLIENT_ID            = "renew_client_id_on_start";
+    public static final String  PREF_RENEW_KEYPAIR              = "renew_keypair_on_startup";
+    public static final String  PREF_USE_ENCRYPTION             = "use_encryption";
+    public static final String  PREF_DISTRIBUTE_PUBKEY          = "public_key_distribution";
+    public static final String  PREF_AUTO_PASSWORD              = "auto_key_change";
+    public static final String  PREF_TRANSMIT_KEYPHRASE         = "transmit_keyphrase";
 
-    public static final boolean PREF_DEFAULT_RENEW_CLIENT_ID   = false;
-    public static final boolean PREF_DEFAULT_RENEW_KEYPAIR     = false;
-    public static final boolean PREF_DEFAULT_USE_ENCRYPTION    = true;
-    public static final boolean PREF_DEFAULT_DISTRIBUTE_PUBKEY = true;
-    public static final boolean PREF_DEFAULT_AUTO_PASSWORD     = true;
+    public static final boolean PREF_DEFAULT_RENEW_CLIENT_ID    = false;
+    public static final boolean PREF_DEFAULT_RENEW_KEYPAIR      = false;
+    public static final boolean PREF_DEFAULT_USE_ENCRYPTION     = true;
+    public static final boolean PREF_DEFAULT_DISTRIBUTE_PUBKEY  = true;
+    public static final boolean PREF_DEFAULT_AUTO_PASSWORD      = true;
+    public static final boolean PREF_DEFAULT_TRANSMIT_KEYPHRASE = true;
 
-    public static final String  PREF_SHARED_KEY                = "encryption_key";
-    public static final String  PREF_PUBLIC_KEY                = "public_key";
-    public static final String  PREF_PRIVATE_KEY               = "private_key";
+    public static final String  PREF_SHARED_KEY                 = "encryption_key";
+    public static final String  PREF_PUBLIC_KEY                 = "public_key";
+    public static final String  PREF_PRIVATE_KEY                = "private_key";
 
     public static class MessageType {
         public final static int PEEKED            = 6;
@@ -240,14 +242,7 @@ public class AsyncLinccer extends Linccer {
     }
 
     public static String newEncryptionKey() {
-        return "^" + Base64.encodeBytes(CryptoHelper.makeRandomBytes(16)) + "$";
-    }
-
-    public static boolean isAutoEncryptionKey(String key) {
-        if (key.length() >= 2) {
-            return key.charAt(0) == '^' && key.charAt(key.length()) == '$';
-        }
-        return false;
+        return Base64.encodeBytes(CryptoHelper.makeRandomBytes(16));
     }
 
     public static void setInSharedPreferences(Context context, String key, String content) {

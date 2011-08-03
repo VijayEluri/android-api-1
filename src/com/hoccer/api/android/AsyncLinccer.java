@@ -15,11 +15,22 @@
 package com.hoccer.api.android;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.apache.http.client.ClientProtocolException;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
@@ -31,6 +42,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.artcom.y60.Logger;
 import com.hoccer.api.BadModeException;
 import com.hoccer.api.ClientActionException;
 import com.hoccer.api.ClientConfig;
@@ -61,6 +73,8 @@ public class AsyncLinccer extends Linccer {
     public static final String  PREF_SHARED_KEY                 = "encryption_key";
     public static final String  PREF_PUBLIC_KEY                 = "public_key";
     public static final String  PREF_PRIVATE_KEY                = "private_key";
+
+    private static final String LOG_TAG                         = "AsyncLinccer";
 
     public static class MessageType {
         public final static int PEEKED            = 6;
@@ -267,6 +281,26 @@ public class AsyncLinccer extends Linccer {
         return storedValue;
     }
 
+    public static PrivateKey getPrivateKeyFromSharedPreferences(Context context)
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException,
+            InvalidKeySpecException {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+
+        String defaultValue = "";
+        String storedValue = prefs.getString(PREF_PRIVATE_KEY, defaultValue);
+        Logger.v(LOG_TAG, "getPrivateKeyFromSharedPreferences, storedValue=" + storedValue);
+
+        byte[] myEncodedPrivateKey = Base64.decode(storedValue);
+
+        PKCS8EncodedKeySpec privSpec = new PKCS8EncodedKeySpec(
+                CryptoHelper.wrapRSA1024_PKCS8(myEncodedPrivateKey));
+
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PrivateKey myPrivateKey = kf.generatePrivate(privSpec);
+
+        return myPrivateKey;
+    }
+
     public static void setEncryptionKeyInSharedPreferences(Context context, String key) {
         setInSharedPreferences(context, PREF_SHARED_KEY, key);
     }
@@ -285,4 +319,23 @@ public class AsyncLinccer extends Linccer {
         return clientName;
     }
 
+    public static byte[] extractKey(Context context, JSONObject password)
+            throws NoSuchAlgorithmException, JSONException, IOException, InvalidKeyException,
+            NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException,
+            InvalidKeySpecException {
+        String myClientID = getClientIdFromSharedPreferences(context);
+        Logger.v(LOG_TAG, "extractKey, myClientID=" + myClientID);
+        String myClientIDHash = CryptoHelper.toHex(CryptoHelper.md_sha1(myClientID.getBytes()));
+        Logger.v(LOG_TAG, "extractKey, myClientIDHash=" + myClientIDHash);
+        if (password.has(myClientIDHash)) {
+            String myCryptedKeyString = password.getString(myClientIDHash);
+            Logger.v(LOG_TAG, "extractKey, myCryptedKeyString=" + myCryptedKeyString);
+            byte[] myCryptedKey = Base64.decode(myCryptedKeyString);
+            PrivateKey myPrivateKey = getPrivateKeyFromSharedPreferences(context);
+            byte[] sharedKeyPhrase = CryptoHelper.decryptRSA(myPrivateKey, myCryptedKey);
+            Logger.v(LOG_TAG, "extractKey, sharedKeyPhrase=" + Base64.encodeBytes(sharedKeyPhrase));
+            return sharedKeyPhrase;
+        }
+        return null;
+    }
 }

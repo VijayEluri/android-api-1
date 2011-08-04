@@ -42,7 +42,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.artcom.y60.Logger;
 import com.hoccer.api.BadModeException;
 import com.hoccer.api.ClientActionException;
 import com.hoccer.api.ClientConfig;
@@ -288,7 +287,7 @@ public class AsyncLinccer extends Linccer {
 
         String defaultValue = "";
         String storedValue = prefs.getString(PREF_PRIVATE_KEY, defaultValue);
-        Logger.v(LOG_TAG, "getPrivateKeyFromSharedPreferences, storedValue=" + storedValue);
+        Log.v(LOG_TAG, "getPrivateKeyFromSharedPreferences, storedValue=" + storedValue);
 
         byte[] myEncodedPrivateKey = Base64.decode(storedValue);
 
@@ -324,16 +323,16 @@ public class AsyncLinccer extends Linccer {
             NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException,
             InvalidKeySpecException {
         String myClientID = getClientIdFromSharedPreferences(context);
-        Logger.v(LOG_TAG, "extractKey, myClientID=" + myClientID);
+        Log.v(LOG_TAG, "extractKey, myClientID=" + myClientID);
         String myClientIDHash = CryptoHelper.toHex(CryptoHelper.md_sha1(myClientID.getBytes()));
-        Logger.v(LOG_TAG, "extractKey, myClientIDHash=" + myClientIDHash);
+        Log.v(LOG_TAG, "extractKey, myClientIDHash=" + myClientIDHash);
         if (password.has(myClientIDHash)) {
             String myCryptedKeyString = password.getString(myClientIDHash);
-            Logger.v(LOG_TAG, "extractKey, myCryptedKeyString=" + myCryptedKeyString);
+            Log.v(LOG_TAG, "extractKey, myCryptedKeyString=" + myCryptedKeyString);
             byte[] myCryptedKey = Base64.decode(myCryptedKeyString);
             PrivateKey myPrivateKey = getPrivateKeyFromSharedPreferences(context);
             byte[] sharedKeyPhrase = CryptoHelper.decryptRSA(myPrivateKey, myCryptedKey);
-            Logger.v(LOG_TAG, "extractKey, sharedKeyPhrase=" + Base64.encodeBytes(sharedKeyPhrase));
+            Log.v(LOG_TAG, "extractKey, sharedKeyPhrase=" + Base64.encodeBytes(sharedKeyPhrase));
             return sharedKeyPhrase;
         }
         return null;

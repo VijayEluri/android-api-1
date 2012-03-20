@@ -44,6 +44,21 @@
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project'"
             unless="sdk.dir"
     />
+	
+	
+    <!-- Custom Android task to deal with the project target, and import the proper rules.
+         This requires ant 1.6.0 or above. -->
+    <path id="android.antlibs">
+        <pathelement path="${sdk-location}/tools/lib/anttasks.jar" />
+        <pathelement path="${sdk-location}/tools/lib/sdklib.jar" />
+        <pathelement path="${sdk-location}/tools/lib/androidprefs.jar" />
+        <pathelement path="${sdk-location}/tools/lib/apkbuilder.jar" />
+        <pathelement path="${sdk-location}/tools/lib/jarutils.jar" />
+    </path>
+
+    <taskdef name="setup"
+        classname="com.android.ant.SetupTask"
+        classpathref="android.antlibs"/>
 
 
 <!-- extension targets. Uncomment the ones where you want to do custom work

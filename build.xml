@@ -451,7 +451,11 @@
 
     <!-- ********** Build Targets ********** -->
 
-    <!-- this target simply force running -setup making
+	<target name="nodeps" >
+		   <property name="dont.do.deps" value="true" />
+	</target>
+	
+	<!-- this target simply force running -setup making
          the project info be read. To be used as
              ant all clean
          to clean the main project as well as the libraries and tested project -->

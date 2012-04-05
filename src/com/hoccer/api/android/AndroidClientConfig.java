@@ -14,7 +14,7 @@ public class AndroidClientConfig extends ClientConfig {
 	public static String getServerNameFromSharedPreferences(Context context) {
 
 		SharedPreferences prefs = context.getSharedPreferences(
-				"com.artcom.hoccer_preferences", Context.MODE_WORLD_READABLE
+AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
 						| Context.MODE_WORLD_WRITEABLE);
 
 		String tmpServerName = "https://linccer.hoccer.com/v3";
@@ -32,7 +32,7 @@ public class AndroidClientConfig extends ClientConfig {
 			Context context) {
 
 		SharedPreferences prefs = context.getSharedPreferences(
-				"com.artcom.hoccer_preferences", Context.MODE_WORLD_READABLE
+AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
 						| Context.MODE_WORLD_WRITEABLE);
 
 		String tmpServerName = "https://filecache.hoccer.com/v3";
@@ -50,7 +50,7 @@ public class AndroidClientConfig extends ClientConfig {
 	public static String getHocletServerNameFromSharedPreferences(
 			Context context) {
 		SharedPreferences prefs = context.getSharedPreferences(
-				"com.artcom.hoccer_preferences", Context.MODE_WORLD_READABLE
+AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
 						| Context.MODE_WORLD_WRITEABLE);
 
 		String tmpServerName = "https://hoclet-experimental.hoccer.com/v3";

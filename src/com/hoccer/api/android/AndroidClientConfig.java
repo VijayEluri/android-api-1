@@ -67,7 +67,7 @@ public class AndroidClientConfig extends ClientConfig {
 
 	public static void useSettingsServers(Context context) {
 
-		useExperimentalServers();
+		useTestingServers();
 		// mLinccerUri = getServerNameFromSharedPreferences(context);
 		// mFileCacheUri = getFileCacheServerNameFromSharedPreferences(context);
 	}

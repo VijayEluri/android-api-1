@@ -13,9 +13,8 @@ public class AndroidClientConfig extends ClientConfig {
 
 	public static String getServerNameFromSharedPreferences(Context context) {
 
-		SharedPreferences prefs = context.getSharedPreferences(
-AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
-						| Context.MODE_WORLD_WRITEABLE);
+        SharedPreferences prefs = context.getSharedPreferences(AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
+                | Context.MODE_WORLD_WRITEABLE);
 
 		String tmpServerName = "https://linccer.hoccer.com/v3";
 		String serverName = prefs.getString("hoccer_server", tmpServerName);
@@ -31,9 +30,8 @@ AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
 	public static String getFileCacheServerNameFromSharedPreferences(
 			Context context) {
 
-		SharedPreferences prefs = context.getSharedPreferences(
-AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
-						| Context.MODE_WORLD_WRITEABLE);
+        SharedPreferences prefs = context.getSharedPreferences(AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
+                | Context.MODE_WORLD_WRITEABLE);
 
 		String tmpServerName = "https://filecache.hoccer.com/v3";
 		String serverName = prefs.getString("hoccer_filecache_server",
@@ -49,9 +47,8 @@ AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
 
 	public static String getHocletServerNameFromSharedPreferences(
 			Context context) {
-		SharedPreferences prefs = context.getSharedPreferences(
-AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
-						| Context.MODE_WORLD_WRITEABLE);
+        SharedPreferences prefs = context.getSharedPreferences(AsyncLinccer.PREFERENCES, Context.MODE_WORLD_READABLE
+                | Context.MODE_WORLD_WRITEABLE);
 
 		String tmpServerName = "https://hoclet-experimental.hoccer.com/v3";
 		String serverName = prefs.getString("hoccer_hoclet_server",

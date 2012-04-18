@@ -64,7 +64,6 @@ public class AsyncLinccer extends Linccer {
 
     public static final boolean PREF_DEFAULT_RENEW_CLIENT_ID    = false;
     public static final boolean PREF_DEFAULT_RENEW_KEYPAIR      = false;
-    public static final boolean PREF_DEFAULT_USE_ENCRYPTION     = true;
     public static final boolean PREF_DEFAULT_DISTRIBUTE_PUBKEY  = true;
     public static final boolean PREF_DEFAULT_AUTO_PASSWORD      = true;
     public static final boolean PREF_DEFAULT_TRANSMIT_KEYPHRASE = true;

@@ -43,6 +43,9 @@ public class LinccLocationManager implements LocationListener {
     private final AsyncLinccer    mLinccer;
     private final Updateable      mUpdater;
 
+    // TODO this is a temporary workaround - normally we shouldn't reference the network provider direclty
+    private final boolean mNetworkProviderAvailable;
+
     public LinccLocationManager(Context pContext, AsyncLinccer linccer, Updateable updater) {
         mContext = pContext;
 
@@ -51,6 +54,8 @@ public class LinccLocationManager implements LocationListener {
 
         mLocationManager = (LocationManager) pContext.getSystemService(Context.LOCATION_SERVICE);
         mWifiManager = (WifiManager) pContext.getSystemService(Context.WIFI_SERVICE);
+
+        mNetworkProviderAvailable = mLocationManager.getAllProviders().contains(LocationManager.NETWORK_PROVIDER);
     }
 
     public Context getContext() {
@@ -65,9 +70,12 @@ public class LinccLocationManager implements LocationListener {
         mLinccer.autoSubmitEnvironmentChanges(false);
 
         mLinccer.onWifiScanResults(mWifiManager.getScanResults());
-        Location location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        if (location != null)
-            mLinccer.onNetworkChanged(location);
+        Location location;
+        if (mNetworkProviderAvailable) {
+            location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            if (location != null)
+                mLinccer.onNetworkChanged(location);
+        }
         location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (location != null)
             mLinccer.onGpsChanged(location);
@@ -80,8 +88,13 @@ public class LinccLocationManager implements LocationListener {
     }
 
     public void activate() {
+
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
-        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, this);
+
+        if (mNetworkProviderAvailable) {
+
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, this);
+        }
     }
 
     @Override

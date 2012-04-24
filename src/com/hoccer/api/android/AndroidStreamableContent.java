@@ -20,68 +20,107 @@ import java.io.OutputStream;
 
 import android.content.ContentResolver;
 import android.net.Uri;
-import android.util.Log;
 
 import com.hoccer.data.GenericStreamableContent;
 
 public abstract class AndroidStreamableContent extends GenericStreamableContent {
 
-    private static final String LOG_TAG = "AndroidStreamableContent";
-    ContentResolver             mContentResolver;
-    private Uri                 mDataUri;
+    // Instance Fields ---------------------------------------------------
+
+    /** The content resolver for accessing the data of this content object */
+    private ContentResolver mContentResolver;
+
+    /** The URI of this object's content. May be null. */
+    private Uri mDataUri;
+
+    // Constructors ------------------------------------------------------
 
     public AndroidStreamableContent(ContentResolver pContentResolver) {
+
         mContentResolver = pContentResolver;
     }
 
-    public Uri getDataUri() {
-        return mDataUri;
+    // Public Instance Methods -------------------------------------------
+
+    /** override this in subclass, if you dont set a data URI */
+    @Override
+    public InputStream openRawInputStream() throws IOException {
+
+        assert null != getDataUri();
+        return mContentResolver.openInputStream(getDataUri());
     }
 
-    protected void setDataUri(Uri dataLocation) throws BadContentResolverUriException {
-        if (dataLocation == null) {
-            throw new BadContentResolverUriException("Could not retrieve content");
-        }
-
-        mDataUri = dataLocation;
-    }
-
-    // override this in subclass, if you dont set a contentresolver uri
+    /** override this in subclass, if you dont set a data URI */
     @Override
     public OutputStream openRawOutputStream() throws IOException {
+
+        assert null != getDataUri();
         return mContentResolver.openOutputStream(getDataUri());
     }
 
-    // override this in subclass, if you dont set a contentresolver uri
     @Override
-    public InputStream openRawInputStream() throws IOException {
-        return mContentResolver.openInputStream(getDataUri());
+    public OutputStream openNewOutputStream() throws IOException {
+
+        return openRawOutputStream();
+    }
+
+    @Override
+    public InputStream openNewInputStream() throws IOException {
+
+        return openRawInputStream();
     }
 
     @Override
     public String getContentType() {
 
         if (getDataUri() != null) {
-            String contentType = mContentResolver.getType(getDataUri());
-            if (contentType != null) {
-                return contentType;
-            }
+
+            return mContentResolver.getType(getDataUri());
         }
 
-        return super.getContentType();
+        return null;
+    }
+
+    /** override this in subclass, if you dont set a data URI */
+    @Override
+    public long getNewStreamLength() throws IOException {
+
+        assert null != getDataUri();
+        return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
+    }
+
+    /**
+     * @return the URI of this object's content
+     */
+    public Uri getDataUri() {
+
+        return mDataUri;
+    }
+
+    // Protected Instance Methods ----------------------------------------
+
+    protected void setDataUri(Uri pContentUri) throws BadContentResolverUriException {
+
+        if (pContentUri == null) {
+            throw new BadContentResolverUriException("Content URI is null!");
+        }
+
+        mDataUri = pContentUri;
+    }
+
+    protected boolean isFileSchemeUri() {
+
+        return "file".equals(mDataUri.getScheme());
     }
 
     // override this in subclass, if you dont set a contentresolver uri
     @Override
     public long getRawStreamLength() throws IOException {
         if (mDataUri == null) {
-            Log.e(LOG_TAG, "no valid content resolver uri!");
+            // Log.e(LOG_TAG, "no valid content resolver uri!");
         }
 
         return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
     }
 
-    protected boolean isFileSchemeUri() {
-        return "file".equals(mDataUri.getScheme());
-    }
 }

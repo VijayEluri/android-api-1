@@ -19,16 +19,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import android.content.ContentResolver;
+import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
 
 import com.hoccer.data.GenericStreamableContent;
 
 public abstract class AndroidStreamableContent extends GenericStreamableContent {
 
+    // Constants ---------------------------------------------------------
+
+    private static final String LOG_TAG = AndroidStreamableContent.class.getSimpleName();
+
     // Instance Fields ---------------------------------------------------
 
     /** The content resolver for accessing the data of this content object */
-    private ContentResolver mContentResolver;
+    private final ContentResolver mContentResolver;
 
     /** The URI of this object's content. May be null. */
     private Uri mDataUri;
@@ -37,6 +42,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
 
     public AndroidStreamableContent(ContentResolver pContentResolver) {
 
+        assert pContentResolver != null;
         mContentResolver = pContentResolver;
     }
 
@@ -46,7 +52,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public InputStream openRawInputStream() throws IOException {
 
-        assert null != getDataUri();
+        assertUriNotNull();
         return mContentResolver.openInputStream(getDataUri());
     }
 
@@ -54,7 +60,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public OutputStream openRawOutputStream() throws IOException {
 
-        assert null != getDataUri();
+        assertUriNotNull();
         return mContentResolver.openOutputStream(getDataUri());
     }
 
@@ -85,8 +91,9 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public long getNewStreamLength() throws IOException {
 
-        assert null != getDataUri();
-        return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
+        assertUriNotNull();
+        AssetFileDescriptor file = mContentResolver.openAssetFileDescriptor(getDataUri(), "r");
+        return file.getLength();
     }
 
     /**
@@ -95,6 +102,13 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     public Uri getDataUri() {
 
         return mDataUri;
+    }
+
+    // override this in subclass, if you dont set a contentresolver uri
+    @Override
+    public long getRawStreamLength() throws IOException {
+
+        return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
     }
 
     // Protected Instance Methods ----------------------------------------
@@ -113,14 +127,14 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
         return "file".equals(mDataUri.getScheme());
     }
 
-    // override this in subclass, if you dont set a contentresolver uri
-    @Override
-    public long getRawStreamLength() throws IOException {
-        if (mDataUri == null) {
-            // Log.e(LOG_TAG, "no valid content resolver uri!");
-        }
+    // Private Instance Methods ------------------------------------------
 
-        return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
+    private void assertUriNotNull() {
+
+        if (getDataUri() == null) {
+
+            throw new IllegalStateException("Data URI is null!");
+        }
     }
 
 }

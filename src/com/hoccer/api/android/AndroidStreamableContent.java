@@ -42,7 +42,11 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
 
     public AndroidStreamableContent(ContentResolver pContentResolver) {
 
-        assert pContentResolver != null;
+        if (pContentResolver == null) {
+
+            throw new IllegalArgumentException("Content resolver can't be null");
+        }
+
         mContentResolver = pContentResolver;
     }
 
@@ -78,6 +82,11 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
 
     @Override
     public String getContentType() {
+
+        if (super.getContentType() != null) {
+
+            return super.getContentType();
+        }
 
         if (getDataUri() != null) {
 

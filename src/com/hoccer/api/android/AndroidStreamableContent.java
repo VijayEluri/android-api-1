@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import android.content.ContentResolver;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
+import android.util.Log;
 
 import com.hoccer.data.GenericStreamableContent;
 
@@ -56,7 +57,6 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public InputStream openRawInputStream() throws IOException {
 
-        assertUriNotNull();
         return mContentResolver.openInputStream(getDataUri());
     }
 
@@ -64,7 +64,6 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public OutputStream openRawOutputStream() throws IOException {
 
-        assertUriNotNull();
         return mContentResolver.openOutputStream(getDataUri());
     }
 
@@ -100,7 +99,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public long getNewStreamLength() throws IOException {
 
-        assertUriNotNull();
+        Log.v(LOG_TAG, "getNewStreamLength " + getDataUri());
         AssetFileDescriptor file = mContentResolver.openAssetFileDescriptor(getDataUri(), "r");
         return file.getLength();
     }
@@ -110,6 +109,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
      */
     public Uri getDataUri() {
 
+        assertUriNotNull();
         return mDataUri;
     }
 
@@ -117,6 +117,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public long getRawStreamLength() throws IOException {
 
+        Log.v(LOG_TAG, "getRawStreamLength " + getDataUri());
         return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
     }
 
@@ -140,7 +141,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
 
     private void assertUriNotNull() {
 
-        if (getDataUri() == null) {
+        if (mDataUri == null) {
 
             throw new IllegalStateException("Data URI is null!");
         }

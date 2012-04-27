@@ -57,6 +57,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public InputStream openRawInputStream() throws IOException {
 
+        assertUriNotNull();
         return mContentResolver.openInputStream(getDataUri());
     }
 
@@ -64,6 +65,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public OutputStream openRawOutputStream() throws IOException {
 
+        assertUriNotNull();
         return mContentResolver.openOutputStream(getDataUri());
     }
 
@@ -99,6 +101,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public long getNewStreamLength() throws IOException {
 
+        assertUriNotNull();
         Log.v(LOG_TAG, "getNewStreamLength " + getDataUri());
         AssetFileDescriptor file = mContentResolver.openAssetFileDescriptor(getDataUri(), "r");
         return file.getLength();
@@ -109,7 +112,6 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
      */
     public Uri getDataUri() {
 
-        assertUriNotNull();
         return mDataUri;
     }
 
@@ -117,6 +119,7 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     @Override
     public long getRawStreamLength() throws IOException {
 
+        assertUriNotNull();
         Log.v(LOG_TAG, "getRawStreamLength " + getDataUri());
         return mContentResolver.openAssetFileDescriptor(getDataUri(), "r").getLength();
     }

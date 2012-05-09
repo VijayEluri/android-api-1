@@ -16,9 +16,12 @@ package com.hoccer.api.android;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.http.client.ClientProtocolException;
 
+import prom.android.zeroconf.client.ZeroConfClient;
+import prom.android.zeroconf.model.ZeroConfRecord;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
@@ -31,9 +34,15 @@ import android.util.Log;
 
 import com.hoccer.api.UpdateException;
 
-public class LinccLocationManager implements LocationListener {
+public class LinccLocationManager implements LocationListener, ZeroConfClient.Listener {
+
+    // Constructors ------------------------------------------------------
 
     private static final String   UNKNOWN_LOCATION_TEXT = "You can not hoc without a location";
+
+    private static final String LOG_TAG = LinccLocationManager.class.getSimpleName();
+
+    // Instance Fields ---------------------------------------------------
 
     private final LocationManager mLocationManager;
     private final WifiManager     mWifiManager;
@@ -43,8 +52,13 @@ public class LinccLocationManager implements LocationListener {
     private final AsyncLinccer    mLinccer;
     private final Updateable      mUpdater;
 
+    private final ZeroConfClient mZeroConf;
+    private final ZeroConfRecord mMdnsRecord;
+
     // TODO this is a temporary workaround - normally we shouldn't reference the network provider direclty
     private final boolean mNetworkProviderAvailable;
+
+    // Constructors ------------------------------------------------------
 
     public LinccLocationManager(Context pContext, AsyncLinccer linccer, Updateable updater) {
         mContext = pContext;
@@ -56,7 +70,21 @@ public class LinccLocationManager implements LocationListener {
         mWifiManager = (WifiManager) pContext.getSystemService(Context.WIFI_SERVICE);
 
         mNetworkProviderAvailable = mLocationManager.getAllProviders().contains(LocationManager.NETWORK_PROVIDER);
+        
+        mMdnsRecord = new ZeroConfRecord();
+        mMdnsRecord.port = 8033;
+
+        mMdnsRecord.domain = "local";
+        mMdnsRecord.protocol = "tcp";
+        mMdnsRecord.application = "hoccer";
+        mMdnsRecord.type = "_" + mMdnsRecord.application + "._" + mMdnsRecord.protocol + "." + mMdnsRecord.domain + ".";
+        mMdnsRecord.clientKey = UUID.randomUUID().toString();
+
+        mZeroConf = new ZeroConfClient(mContext);
+        mZeroConf.registerListener(this);
     }
+
+    // Public Instance Methods -------------------------------------------
 
     public Context getContext() {
         return mContext;
@@ -84,11 +112,19 @@ public class LinccLocationManager implements LocationListener {
     }
 
     public void deactivate() {
+
+        Log.d(LOG_TAG, "Deactivating");
+
         mLocationManager.removeUpdates(this);
+        mZeroConf.unregisterService(mMdnsRecord.clientKey);
+        mZeroConf.disconnectFromService();
     }
 
     public void activate() {
 
+        Log.d(LOG_TAG, "Activating");
+
+        mZeroConf.connectToService();
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
 
         if (mNetworkProviderAvailable) {
@@ -166,6 +202,24 @@ public class LinccLocationManager implements LocationListener {
             return UNKNOWN_LOCATION_TEXT + " ~" + location.getAccuracy() + "m";
         }
     }
+
+    @Override
+    public void serviceRemoved(ZeroConfRecord pRecord) {
+    }
+
+    @Override
+    public void serviceUpdated(ZeroConfRecord pRecord) {
+    }
+
+    @Override
+    public void connectedToService() {
+
+        Log.d(LOG_TAG, "Connected to zero conf service");
+        mMdnsRecord.name = "Hoccer Client " + mLinccer.getClientName();
+        mZeroConf.registerService(mMdnsRecord);
+    }
+
+    // Private Instance Methods ------------------------------------------
 
     private String trimAddress(String pAddressLine) {
         if (pAddressLine.length() < 27)

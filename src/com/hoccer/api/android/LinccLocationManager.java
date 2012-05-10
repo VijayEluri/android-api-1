@@ -15,13 +15,11 @@
 package com.hoccer.api.android;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.http.client.ClientProtocolException;
 
-import prom.android.zeroconf.client.ZeroConfClient;
-import prom.android.zeroconf.model.ZeroConfRecord;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
@@ -34,7 +32,7 @@ import android.util.Log;
 
 import com.hoccer.api.UpdateException;
 
-public class LinccLocationManager implements LocationListener, ZeroConfClient.Listener {
+public class LinccLocationManager implements LocationListener, LocalDiscovery.Listener {
 
     // Constructors ------------------------------------------------------
 
@@ -52,8 +50,7 @@ public class LinccLocationManager implements LocationListener, ZeroConfClient.Li
     private final AsyncLinccer    mLinccer;
     private final Updateable      mUpdater;
 
-    private final ZeroConfClient mZeroConf;
-    private final ZeroConfRecord mMdnsRecord;
+    private final LocalDiscovery mLocalDiscovery;
 
     // TODO this is a temporary workaround - normally we shouldn't reference the network provider direclty
     private final boolean mNetworkProviderAvailable;
@@ -70,18 +67,10 @@ public class LinccLocationManager implements LocationListener, ZeroConfClient.Li
         mWifiManager = (WifiManager) pContext.getSystemService(Context.WIFI_SERVICE);
 
         mNetworkProviderAvailable = mLocationManager.getAllProviders().contains(LocationManager.NETWORK_PROVIDER);
-        
-        mMdnsRecord = new ZeroConfRecord();
-        mMdnsRecord.port = 8033;
 
-        mMdnsRecord.domain = "local";
-        mMdnsRecord.protocol = "tcp";
-        mMdnsRecord.application = "hoccer";
-        mMdnsRecord.type = "_" + mMdnsRecord.application + "._" + mMdnsRecord.protocol + "." + mMdnsRecord.domain + ".";
-        mMdnsRecord.clientKey = UUID.randomUUID().toString();
-
-        mZeroConf = new ZeroConfClient(mContext);
-        mZeroConf.registerListener(this);
+        mLocalDiscovery = new LocalDiscovery(pContext);
+        mLocalDiscovery.addListener(this);
+        mLocalDiscovery.connect();
     }
 
     // Public Instance Methods -------------------------------------------
@@ -116,15 +105,17 @@ public class LinccLocationManager implements LocationListener, ZeroConfClient.Li
         Log.d(LOG_TAG, "Deactivating");
 
         mLocationManager.removeUpdates(this);
-        mZeroConf.unregisterService(mMdnsRecord.clientKey);
-        mZeroConf.disconnectFromService();
+
+        mLocalDiscovery.revokeAnnouncement();
     }
 
     public void activate() {
 
         Log.d(LOG_TAG, "Activating");
 
-        mZeroConf.connectToService();
+        mLocalDiscovery.publishAnnouncement("Hoccer Client " + mLinccer.getClientName(),
+                AsyncLinccer.getClientIdFromSharedPreferences(mContext));
+        
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
 
         if (mNetworkProviderAvailable) {
@@ -135,22 +126,13 @@ public class LinccLocationManager implements LocationListener, ZeroConfClient.Li
 
     @Override
     public void onLocationChanged(Location location) {
+
         Log.v("LinccLocationManager", location.toString());
+
         if (mUpdater != null) {
+
             mUpdater.updateNow();
         }
-        // try {
-        // refreshLocation();
-        // } catch (ClientProtocolException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // } catch (UpdateException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // } catch (IOException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
     }
 
     @Override
@@ -204,19 +186,13 @@ public class LinccLocationManager implements LocationListener, ZeroConfClient.Li
     }
 
     @Override
-    public void serviceRemoved(ZeroConfRecord pRecord) {
-    }
+    public void onVisiblePeersChanged(Collection<String> pVisibleIds) {
 
-    @Override
-    public void serviceUpdated(ZeroConfRecord pRecord) {
-    }
+        Log.d(LOG_TAG, "visible peers changed:");
+        for (String id : pVisibleIds) {
 
-    @Override
-    public void connectedToService() {
-
-        Log.d(LOG_TAG, "Connected to zero conf service");
-        mMdnsRecord.name = "Hoccer Client " + mLinccer.getClientName();
-        mZeroConf.registerService(mMdnsRecord);
+            Log.d(LOG_TAG, " - " + id);
+        }
     }
 
     // Private Instance Methods ------------------------------------------

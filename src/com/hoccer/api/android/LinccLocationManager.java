@@ -97,6 +97,7 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
         if (location != null)
             mLinccer.onGpsChanged(location);
 
+        publishMdns();
         mLinccer.submitEnvironment();
     }
 
@@ -105,16 +106,33 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
         Log.d(LOG_TAG, "Deactivating");
 
         mLocationManager.removeUpdates(this);
-
         mLocalDiscovery.revokeAnnouncement();
+    }
+
+    public void shutdown() {
+
+        deactivate();
+        mLocalDiscovery.disconnect();
+    }
+
+    // TESTING
+    private int counter = 0;
+
+    private void publishMdns() {
+
+        Log.d(LOG_TAG, "publishMdns");
+        String name = mLinccer.getClientName();
+        if (name != null) {
+
+            mLocalDiscovery.publishAnnouncement(name + "_" + this + "_" + counter++,
+                    AsyncLinccer.getClientIdFromSharedPreferences(mContext));
+        }
     }
 
     public void activate() {
 
         Log.d(LOG_TAG, "Activating");
-
-        mLocalDiscovery.publishAnnouncement("Hoccer Client " + mLinccer.getClientName(),
-                AsyncLinccer.getClientIdFromSharedPreferences(mContext));
+        publishMdns();
         
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
 

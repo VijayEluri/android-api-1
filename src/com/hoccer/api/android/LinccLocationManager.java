@@ -15,8 +15,8 @@
 package com.hoccer.api.android;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.http.client.ClientProtocolException;
 
@@ -32,11 +32,9 @@ import android.util.Log;
 
 import com.hoccer.api.UpdateException;
 
-public class LinccLocationManager implements LocationListener, LocalDiscovery.Listener {
+public class LinccLocationManager implements LocationListener {
 
     // Constructors ------------------------------------------------------
-
-    private static final String   UNKNOWN_LOCATION_TEXT = "You can not hoc without a location";
 
     private static final String LOG_TAG = LinccLocationManager.class.getSimpleName();
 
@@ -50,9 +48,9 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
     private final AsyncLinccer    mLinccer;
     private final Updateable      mUpdater;
 
-    private final LocalDiscovery mLocalDiscovery;
+    private final String mOwnMdnsId = UUID.randomUUID().toString();
 
-    // TODO this is a temporary workaround - normally we shouldn't reference the network provider direclty
+    // TODO this is a temporary workaround - normally we shouldn't reference the network provider directly
     private final boolean mNetworkProviderAvailable;
 
     // Constructors ------------------------------------------------------
@@ -67,10 +65,6 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
         mWifiManager = (WifiManager) pContext.getSystemService(Context.WIFI_SERVICE);
 
         mNetworkProviderAvailable = mLocationManager.getAllProviders().contains(LocationManager.NETWORK_PROVIDER);
-
-        mLocalDiscovery = new LocalDiscovery(pContext);
-        mLocalDiscovery.addListener(this);
-        mLocalDiscovery.connect();
     }
 
     // Public Instance Methods -------------------------------------------
@@ -97,7 +91,6 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
         if (location != null)
             mLinccer.onGpsChanged(location);
 
-        publishMdns();
         mLinccer.submitEnvironment();
     }
 
@@ -106,33 +99,11 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
         Log.d(LOG_TAG, "Deactivating");
 
         mLocationManager.removeUpdates(this);
-        mLocalDiscovery.revokeAnnouncement();
-    }
-
-    public void shutdown() {
-
-        deactivate();
-        mLocalDiscovery.disconnect();
-    }
-
-    // TESTING
-    private int counter = 0;
-
-    private void publishMdns() {
-
-        Log.d(LOG_TAG, "publishMdns");
-        String name = mLinccer.getClientName();
-        if (name != null) {
-
-            mLocalDiscovery.publishAnnouncement(name + "_" + this + "_" + counter++,
-                    AsyncLinccer.getClientIdFromSharedPreferences(mContext));
-        }
     }
 
     public void activate() {
 
         Log.d(LOG_TAG, "Activating");
-        publishMdns();
         
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, this);
 
@@ -199,17 +170,7 @@ public class LinccLocationManager implements LocationListener, LocalDiscovery.Li
             return addressLine + info;
 
         } catch (Exception e) {
-            return UNKNOWN_LOCATION_TEXT + " ~" + location.getAccuracy() + "m";
-        }
-    }
-
-    @Override
-    public void onVisiblePeersChanged(Collection<String> pVisibleIds) {
-
-        Log.d(LOG_TAG, "visible peers changed:");
-        for (String id : pVisibleIds) {
-
-            Log.d(LOG_TAG, " - " + id);
+            return mContext.getString(R.string.cant_hoc_without_location) + " ~" + location.getAccuracy() + "m";
         }
     }
 

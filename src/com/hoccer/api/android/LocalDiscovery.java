@@ -31,6 +31,28 @@ public class LocalDiscovery {
     /** Key of the client's ID property of the mDNS record */
     private static final String ID_PROPERTY = "id";
 
+    private static final String DNS_APPLICATION = "hoccer";
+
+    private static final String DNS_PROTOCOL = "tcp";
+
+    private static final String DNS_DOMAIN = "local";
+
+    private static final String DNS_TYPE = "_" + DNS_APPLICATION + "._" + DNS_PROTOCOL + "." + DNS_DOMAIN + ".";
+
+    // Static Initializer ------------------------------------------------
+
+    static {
+
+        // take these in to activate JmDNS log output in logcat
+        // AndroidLogHandler handler = new AndroidLogHandler();
+        // Logger.getLogger(JmDNSImpl.class.getName()).addHandler(handler);
+        // Logger.getLogger(JmDNSImpl.class.getName()).setLevel(Level.FINEST);
+        // Logger.getLogger(DNSStateTask.class.getName()).addHandler(handler);
+        // Logger.getLogger(DNSStateTask.class.getName()).setLevel(Level.FINEST);
+        // Logger.getLogger(DNSResolverTask.class.getName()).addHandler(handler);
+        // Logger.getLogger(DNSResolverTask.class.getName()).setLevel(Level.FINEST);
+    }
+
     // Instance Fields ---------------------------------------------------
 
     /** Initial state. Furthermore, is entered if unregistration completes while in UNREGISTERING. */
@@ -76,15 +98,21 @@ public class LocalDiscovery {
     // Constructors ------------------------------------------------------
 
     /**
-     * Creates a new instance that is not connected to an mDNS service and doesn't yet announce a record.
+     * Creates a new instance that will automatically connect to an mDNS instance but does not yet announce a record.
      * 
      * @param pContext
+     * @param pListener
+     *            listener for this instance which will be added before connecting. may be null.
      */
-    public LocalDiscovery(Context pContext) {
-
-        mVisibleIds = new HashSet<String>();
+    public LocalDiscovery(Context pContext, Listener pListener) {
 
         mListeners = new HashSet<Listener>();
+        if (pListener != null) {
+
+            addListener(pListener);
+        }
+
+        mVisibleIds = new HashSet<String>();
         mZeroConf = new ZeroConfClient(pContext);
 
         mZeroConfListener = new ZeroConfListener();
@@ -93,14 +121,28 @@ public class LocalDiscovery {
         // prepare record for later use
         mRecord = new ZeroConfRecord();
         mRecord.port = 0;
-        mRecord.domain = "local";
-        mRecord.protocol = "tcp";
-        mRecord.application = "hoccer";
-        mRecord.type = "_" + mRecord.application + "._" + mRecord.protocol + "." + mRecord.domain + ".";
+        mRecord.domain = DNS_DOMAIN;
+        mRecord.protocol = DNS_PROTOCOL;
+        mRecord.application = DNS_APPLICATION;
+        mRecord.type = DNS_TYPE;
         mRecord.clientKey = UUID.randomUUID().toString();
+        mRecord.setProperty(ID_PROPERTY, mRecord.clientKey);
+
+        connect();
+    }
+
+    /** Shorthand for LocalDiscovery(pContext, null) */
+    public LocalDiscovery(Context pContext) {
+
+        this(pContext, null);
     }
 
     // Public Instance Methods -------------------------------------------
+
+    public String getId() {
+
+        return mRecord.clientKey;
+    }
 
     /**
      * Publishes an announcement for this client. Later announcements override earlier ones, i.e. you always announce
@@ -111,15 +153,14 @@ public class LocalDiscovery {
      * @param pClientId
      *            the peer ID of this Hoccer client
      */
-    public void publishAnnouncement(final String pName, final String pClientId) {
+    public void publishAnnouncement(final String pName) {
 
-        Log.d(LOG_TAG, "publishAnnouncement, name='" + pName + "', clientId='" + pClientId
+        Log.d(LOG_TAG, "publishAnnouncement, name='" + pName + "', id='" + mRecord.clientKey
                 + "' is waiting to be executed");
         synchronized (mZeroConf) {
 
             Log.d(LOG_TAG, "publishAnnouncement is executing...");
 
-            mRecord.setProperty(ID_PROPERTY, pClientId);
             mRecord.name = pName;
             mState.onPublish();
 
@@ -258,9 +299,14 @@ public class LocalDiscovery {
         }
     }
 
+    private boolean isHoccer(ZeroConfRecord pRecord) {
+
+        return DNS_TYPE.equals(pRecord.type);
+    }
+
     private boolean isMyClientId(String pId) {
 
-        return pId != null && !pId.equals(mRecord.getPropertyString(ID_PROPERTY));
+        return pId != null && !pId.equals(mRecord.clientKey);
     }
 
     // Inner Classes -----------------------------------------------------
@@ -276,19 +322,25 @@ public class LocalDiscovery {
         @Override
         public void serviceUpdated(ZeroConfRecord pRecord) {
 
-            String hoccerClientId = pRecord.getPropertyString(ID_PROPERTY);
-
-            Log.d(LOG_TAG, "serviceUpdated, name: '" + pRecord.name + "', id: '" + hoccerClientId + "'");
-            // Log.d(LOG_TAG, "properties: ");
-            // for (String name : pRecord.getPropertyNames()) {
-            //
-            // Log.d(LOG_TAG, " - " + name + ": " + pRecord.getPropertyString(name));
-            // }
-
-            if (hoccerClientId != null && !isMyClientId(hoccerClientId)) {
+            if (isHoccer(pRecord)) {
                 // it's a hoccer client
 
+                String hoccerClientId = pRecord.getPropertyString(ID_PROPERTY);
+
+                Log.d(LOG_TAG, "serviceUpdated, name: '" + pRecord.name + "', id: '" + hoccerClientId + "'");
+                // Log.d(LOG_TAG, "properties: ");
+                // for (String name : pRecord.getPropertyNames()) {
+                //
+                // Log.d(LOG_TAG, " - " + name + ": " + pRecord.getPropertyString(name));
+                // }
+
                 Log.d(LOG_TAG, "it's a hoccer client!");
+
+                if (hoccerClientId == null) {
+
+                    Log.i(LOG_TAG, "id property missing in record for '" + pRecord.name + "', ignoring");
+                    return;
+                }
 
                 if (isMyClientId(hoccerClientId)) {
 
@@ -321,14 +373,17 @@ public class LocalDiscovery {
         @Override
         public void serviceRemoved(ZeroConfRecord pRecord) {
 
-            String hoccerClientId = pRecord.getPropertyString(ID_PROPERTY);
-
-            Log.d(LOG_TAG, "serviceRemoved, name: '" + pRecord.name + "', id: '" + hoccerClientId + "'");
-
-            if (hoccerClientId != null) {
+            if (isHoccer(pRecord)) {
                 // it's a hoccer client
 
-                Log.d(LOG_TAG, "it's a hoccer client!");
+                String hoccerClientId = pRecord.getPropertyString(ID_PROPERTY);
+                Log.d(LOG_TAG, "serviceRemoved, name: '" + pRecord.name + "', id: '" + hoccerClientId + "'");
+
+                if (hoccerClientId == null) {
+
+                    Log.i(LOG_TAG, "id property missing in record for '" + pRecord.name + "', ignoring");
+                    return;
+                }
 
                 if (isMyClientId(hoccerClientId)) {
 
@@ -369,22 +424,27 @@ public class LocalDiscovery {
 
         public void onPublish() {
 
-            Log.d(LOG_TAG, "State " + this + " is ignoring event onPublish");
+            Log.d(LOG_TAG, toString() + " is ignoring event onPublish");
         }
 
         public void onRevoke() {
 
-            Log.d(LOG_TAG, "State " + this + " is ignoring event onRevoke");
+            Log.d(LOG_TAG, toString() + " is ignoring event onRevoke");
         }
 
         public void onUpdated() {
 
-            Log.d(LOG_TAG, "State " + this + " is ignoring event onUpdated");
+            Log.d(LOG_TAG, toString() + " is ignoring event onUpdated");
         }
 
         public void onRemoved() {
 
-            Log.d(LOG_TAG, "State " + this + " is ignoring event onRemoved");
+            Log.d(LOG_TAG, toString() + " is ignoring event onRemoved");
+        }
+
+        public String toString() {
+
+            return getClass().getSimpleName();
         }
     }
 
@@ -393,7 +453,7 @@ public class LocalDiscovery {
         @Override
         public void onPublish() {
 
-            Log.d(LOG_TAG, "State " + this + " - onPublish");
+            Log.d(LOG_TAG, toString() + " - onPublish");
 
             register();
             mState = REGISTERING;
@@ -405,7 +465,7 @@ public class LocalDiscovery {
         @Override
         public void onUpdated() {
 
-            Log.d(LOG_TAG, "State " + this + " - onUpdated");
+            Log.d(LOG_TAG, toString() + " - onUpdated");
 
             mState = REGISTERED;
         }
@@ -422,7 +482,7 @@ public class LocalDiscovery {
         @Override
         public void onUpdated() {
 
-            Log.d(LOG_TAG, "State " + this + " - onUpdated");
+            Log.d(LOG_TAG, toString() + " - onUpdated");
 
             unregister();
             mState = UNREGISTERING;
@@ -433,7 +493,7 @@ public class LocalDiscovery {
         @Override
         public void onRevoke() {
 
-            Log.d(LOG_TAG, "State " + this + " - onRevoke");
+            Log.d(LOG_TAG, toString() + " - onRevoke");
 
             unregister();
             mState = UNREGISTERING;
@@ -444,7 +504,7 @@ public class LocalDiscovery {
         @Override
         public void onPublish() {
 
-            Log.d(LOG_TAG, "State " + this + " - onPublish");
+            Log.d(LOG_TAG, toString() + " - onPublish");
 
             mState = WAITING_TO_REGISTER;
         }
@@ -452,7 +512,7 @@ public class LocalDiscovery {
         @Override
         public void onRemoved() {
 
-            Log.d(LOG_TAG, "State " + this + " - onRemoved");
+            Log.d(LOG_TAG, toString() + " - onRemoved");
 
             mState = UNREGISTERED;
         }
@@ -463,7 +523,7 @@ public class LocalDiscovery {
         @Override
         public void onRemoved() {
 
-            Log.d(LOG_TAG, "State " + this + " - onRemoved");
+            Log.d(LOG_TAG, toString() + " - onRemoved");
 
             register();
             mState = REGISTERING;

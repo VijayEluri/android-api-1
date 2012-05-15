@@ -29,4 +29,5 @@
 -->
 <resources>
     <string name="app_name">android-api</string>
+    <string name="cant_hoc_without_location">You can not hoc without a location</string>
 </resources>

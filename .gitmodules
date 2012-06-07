@@ -1,3 +1,0 @@
-[submodule "java-api"]
-	path = java-api
-	url = git@github.com:hoccer/java-api.git

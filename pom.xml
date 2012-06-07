@@ -10,9 +10,25 @@
 
   <properties>
     <java.version>1.6</java.version>
+    <android.platform>4</android.platform>
+    <android.version>1.6_r2</android.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <version>${android.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>hoccer</groupId>
+      <artifactId>hoccer-java-api</artifactId>
+      <version>0.0.3-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+  
   <build>
     <plugins>
       <plugin>
@@ -31,26 +47,12 @@
         <extensions>true</extensions>
         <configuration>
             <sdk>
-                <platform>4</platform>
+                <platform>${android.platform}</platform>
             </sdk>
         </configuration>
       </plugin>
     </plugins>
   </build>
-  
-  <dependencies>
-    <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android</artifactId>
-      <version>1.6_r2</version>
-      <scope>provided</scope>
-    </dependency>
-  	<dependency>
-  		<groupId>hoccer</groupId>
-  		<artifactId>hoccer-java-api</artifactId>
-  		<version>0.0.3-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
 
   <distributionManagement>
     <repository>

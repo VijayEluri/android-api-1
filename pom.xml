@@ -16,21 +16,39 @@
   </properties>
 
   <dependencies>
+    <!-- Android framework -->
     <dependency>
       <groupId>com.google.android</groupId>
       <artifactId>android</artifactId>
       <version>${android.version}</version>
       <scope>provided</scope>
     </dependency>
+    <!-- Hoccer API for Java -->
     <dependency>
       <groupId>hoccer</groupId>
       <artifactId>hoccer-java-api</artifactId>
       <version>0.0.3-SNAPSHOT</version>
+      <exclusions>
+          <!-- Exclude dependencies provided by platform -->
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+          </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
   
   <build>
     <plugins>
+      <!-- Java compilation -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -40,15 +58,16 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
+      <!-- Android compilation -->
       <plugin>
         <groupId>com.jayway.maven.plugins.android.generation2</groupId>
         <artifactId>android-maven-plugin</artifactId>
         <version>3.1.1</version>
         <extensions>true</extensions>
         <configuration>
-            <sdk>
-                <platform>${android.platform}</platform>
-            </sdk>
+          <sdk>
+            <platform>${android.platform}</platform>
+          </sdk>
         </configuration>
       </plugin>
     </plugins>

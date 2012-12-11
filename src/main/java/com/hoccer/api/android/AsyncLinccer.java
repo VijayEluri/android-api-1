@@ -74,6 +74,9 @@ public class AsyncLinccer extends Linccer {
 
     private static final String LOG_TAG                         = "AsyncLinccer";
 
+    private Thread mReceiveThread = null;
+    private boolean mReceiveContinuously = false;
+    
     public static class MessageType {
         public final static int PEEKED            = 6;
         public final static int PEEKING           = 5;
@@ -161,6 +164,63 @@ public class AsyncLinccer extends Linccer {
             }
         }).start();
 
+    }
+    
+    public void asyncReceiveContinuously(final String mode, final Handler handler) {
+		Log.v("Linccer", "Launching continuous receive");
+    	mReceiveContinuously = true;
+		if(mReceiveThread != null) {
+			return;
+		}
+    	mReceiveThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Log.v("Linccer", "Started continuous receive");
+				while(mReceiveContinuously) {
+					Message msg = handler.obtainMessage();
+					try {
+						Log.v("Linccer", "Trying continuous receive");
+
+						msg.obj = receiveWaiting(mode);
+						
+						if(msg.obj == null) {
+							continue;
+						}
+						
+						msg.what = MessageType.RECEIVED;
+					} catch (BadModeException e) {
+						msg.what = MessageType.BAD_MODE;
+						msg.obj = e;
+					} catch (ClientActionException e) {
+						msg.what = MessageType.BAD_CLIENT_ACTION;
+						msg.obj = e;
+					} catch (CollidingActionsException e) {
+						msg.what = MessageType.COLLISION;
+						msg.obj = e;
+					}
+					
+					if(!mReceiveContinuously) {
+						Log.v("Linccer", "Continuous receive interrupted");
+						break;
+					}
+					
+					Log.v("Linccer", msg.what + " " + msg.obj);
+					
+					handler.dispatchMessage(msg);
+				}
+				Log.v("Linccer", "Finished continuous receive");
+				mReceiveThread = null;
+			}
+		});
+    	mReceiveThread.start();
+    }
+    
+    public void abortReceiveContinuously() {
+		if(mReceiveContinuously) {
+			Log.v("Linccer", "Aborting continuous receive");
+	    	mReceiveContinuously = false;
+	    	abortReceive();
+		}
     }
 
     // public void asyncPeek(String groupID, final Handler handler) {

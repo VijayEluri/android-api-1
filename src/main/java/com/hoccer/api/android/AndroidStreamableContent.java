@@ -70,18 +70,6 @@ public abstract class AndroidStreamableContent extends GenericStreamableContent 
     }
 
     @Override
-    public OutputStream openNewOutputStream() throws IOException {
-
-        return openRawOutputStream();
-    }
-
-    @Override
-    public InputStream openNewInputStream() throws IOException {
-
-        return openRawInputStream();
-    }
-
-    @Override
     public String getContentType() {
 
         if (super.getContentType() != null) {

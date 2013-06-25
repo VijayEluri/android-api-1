@@ -11,17 +11,25 @@
   <properties>
     <java.version>1.6</java.version>
     <android.platform>4</android.platform>
-    <android.version>1.6_r2</android.version>
+    <android.version>2.2.1</android.version>
+    <android.platform.version>4.2.2_r2</android.platform.version>
+    <android.supportv4.version>13</android.supportv4.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
-    <!-- Android framework -->
+    <!-- Android platform -->
     <dependency>
-      <groupId>com.google.android</groupId>
+      <groupId>android</groupId>
       <artifactId>android</artifactId>
-      <version>${android.version}</version>
+      <version>${android.platform.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <!-- Android support library v4 -->
+    <dependency>
+      <groupId>android.support</groupId>
+      <artifactId>compatibility-v4</artifactId>
+      <version>${android.supportv4.version}</version>
     </dependency>
     <!-- Hoccer API for Java -->
     <dependency>
